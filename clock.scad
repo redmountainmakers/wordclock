@@ -2,19 +2,18 @@
 
 use <MCAD/fonts.scad>
 
-thisFont=8bit_polyfont();
-x_shift=thisFont[0][0];
-y_shift=thisFont[0][1];
+clock_r = 100;
+disc_thickness = 5;
 
 hours=["one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
 mins=["o-clock", "o-five", "ten", "fifteen", "twenty", "twenty-five", "thirty", "thirty-five", "forty", "forty-five", "fifty", "fifty-five"];
 
-module clock_words(radius=20.0, letter_depth=2.0, center_offset=0, words) {
-	for (i=[0:(len(words)-1)]) assign(angle=(i+1)*360/len(words), letters=search(words[i],thisFont[2],1,1) ) {
-		rotate(90-angle) translate([radius,center_offset])		
-		// extrude each letter
-		for(j=[0:(len(letters)-1)] ) translate([j*x_shift,-y_shift/2]) {
-			linear_extrude(height=letter_depth) polygon(points=thisFont[2][letters[j]][6][0],paths=thisFont[2][letters[j]][6][1]);
+module clock_words(from_center=46.0, letter_depth=disc_thickness, center_offset=0, words) {
+	for (i=[0:(len(words)-1)]) {
+		angle=(i+1)*360/len(mins);
+		rotate(90-angle) translate([from_center,center_offset])
+		linear_extrude(height=letter_depth) {
+			text(words[i], size=7);
 		}
 	}
 }
@@ -24,18 +23,18 @@ difference() {
 	union() {	
 		// see-through slots
 		difference() {
-			cylinder(5,r=137);
-			for (i=[0:(len(mins)-1)]) assign(angle=(i+1)*360/len(mins)) {
-				rotate(90-angle) translate([40,-11])
-				translate([0,0,-2.5]) cube([90,10,y_shift]);
+			color("aqua") cylinder(disc_thickness,r=clock_r);
+			for (i=[0:(len(mins)-1)]) {
+				angle=(i+1)*360/len(mins);
+				rotate(90-angle) translate([44,-10.5,-0.5])
+				cube([clock_r-50,10,disc_thickness+1]);
 			}
 		}
 		// bumps
 		for (i=[0:(len(mins)-1)]) assign(angle=(i+1)*360/len(mins)) {
-			rotate(90-angle) translate([127,-11])
-			translate([5,3,-13]) cube([4,4,18]);
+			rotate(90-angle) translate([clock_r - 5, -10, -15]) cube([4,4,18]);
 		}
-		color("blue") clock_words(radius=40,letter_depth=6, center_offset=4, words=hours);
+		color("blue") clock_words(center_offset=2, words=hours);
 		translate([0, 0, -18]) cylinder(18, 24, 24);
 	}
 	translate([0,0,-5]) cylinder(15, 18, 18);	
@@ -45,13 +44,13 @@ difference() {
 // minutes disc
 translate([0,0,-8]) difference() {
 	union() {
-		cylinder(5,r=132);
+		color("pink") cylinder(disc_thickness,r=clock_r-5);
 		// bumps
-		for (i=[0:(len(mins)-1)]) assign(angle=(i+1)*360/len(mins)) {
-			rotate(90-angle) translate([122,-11])
-			translate([5,3,-5]) cube([4,4,10]);
+		for (i=[0:(len(mins)-1)]){
+			angle=(i+1)*360/len(mins);
+			rotate(90-angle) translate([clock_r - 8 - 5, -10, -7]) cube([4,4,8]);
 		}
-		color("red") clock_words(radius=40,letter_depth=6, center_offset=-5, words=mins, disc_r=132);
+		color("red") clock_words(from_center=48, center_offset=-8, words=mins);
 		translate([0,0,-10]) cylinder(10, 30, 30);
 	}
 	translate([0,0,-20]) cylinder(30, 25, 25);
