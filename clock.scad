@@ -31,7 +31,8 @@ difference() {
 			}
 		}
 		// bumps
-		for (i=[0:(len(mins)-1)]) assign(angle=(i+1)*360/len(mins)) {
+		for (i=[0:(len(mins)-1)]) {
+			angle=(i+1)*360/len(mins);
 			rotate(90-angle) translate([clock_r - 5, -10, -15]) cube([4,4,18]);
 		}
 		color("blue") clock_words(center_offset=2, words=hours);
