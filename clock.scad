@@ -18,18 +18,19 @@ module hours_disc() {
 	difference() {
 		union() {	
 			difference() {
-				color("aqua") cylinder(disc_thickness,r=clock_r); // clock disc				
+				cylinder(disc_thickness,r=clock_r); // clock disc				
 				
-				// see-through slots (circle-cube-circle)
+				// see-through slots
 				for (i=[0:(len(mins)-1)]) {
 					width = clock_r - 55;
 					angle=(i+1)*360/len(mins);
 					rotate(90-angle) translate([44,-10.5,-0.5]) {
 						linear_extrude(height=disc_thickness+1) {
-							translate([0,5]) circle(5);
-							translate([width,5]) circle(5);
+							hull() {
+								translate([0,5]) circle(5);
+								translate([width,5]) circle(5);
+							}
 						}
-						cube([width,10,disc_thickness+1]);
 					}
 				}
 			}
@@ -61,7 +62,32 @@ module minutes_disc() {
 	}
 }
 
-hours_disc();
+module cover_plate() {
+	square_size = clock_r * 1.9;
+	move = (square_size/2);
+	%difference() {
+		translate([-move,-move]) linear_extrude(height=5) square(square_size);
+		union() {
+			translate([-move +6.4,-move + 6.5,5.5]) scale([0.82,0.82,0.82]) {
+				for (j=[0:15]) {
+					for(i=[0:15]) {
+						translate([j*15,i*15,0]) rotate([180]) scale([0.25,0.25,0.25]) {
+							sphere(r = 20);
+							translate([0, 0, 20 * sin(30)]) cylinder(h = 30, r1 = 20 * cos(30), r2 = 0);
+						}
+					}
+				}
+				
+			}
+			translate([40,-9,-2]) minkowski() { 
+				cube([60,18,6]);
+				cylinder(r=2,h=6);
+			}
+		}
+	}
+}
 
-// move this disc below
+// main clock parts
+translate([0,0,8]) cover_plate();
+hours_disc();
 translate([0,0,-8]) minutes_disc();
