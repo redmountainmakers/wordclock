@@ -136,63 +136,42 @@ module minutes_disc() {
     }
 }
 
+module fillet(r) {
+    translate([r / 2, r / 2, 0]) difference() {
+		square([r + 0.01, r + 0.01], center = true);
+		translate([r/2, r/2]) circle(r = r, center = true);
+	}
+}
+
 module cover_plate() {
-    square_size = clock_r * 1.9;
-    move = (square_size/2);
-    //$fs = 8;
-    %difference() {
-        translate([-move,-move]) linear_extrude(height=5) square(square_size);
-
-        union() {
-            // tear drop texture
-            *translate([-move + 6.4, -move + 6.5, 5.5]) scale([0.82, 0.82, 0.82]) {
-                for (j = [0 : 15]) {
-                    for(i = [0 : 15]) {
-                        translate([j * 15, i * 15, 0]) {
-                            rotate([180]) {
-                                scale([0.25, 0.25, 0.25]) {
-                                    sphere(r = 20);
-                                    translate([0, 0, 20 * sin(30)]) {
-                                        cylinder(h = 30, r1 = 20 * cos(30), r2 = 0);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // main time cutout
-            cutout_x = 44;
-            cutout_y = 18;
-            cutout_z = 6;
-            translate([-48 - cutout_x, -9, -2]) {
-                minkowski() {
-                    cube([cutout_x, cutout_y, cutout_z]);
-                    cylinder(r=5.4, h=6);
-                }
-            }
-            /*
-            translate([-30,1,-2]) {
-                rotate(136) {
-                    linear_extrude(height=10) {
-                        polygon([[0,0],[22,80],[80,22]])
-                    }
-                }
-            }
-            */
-        }
-    }
+    square_size = (clock_r * 1.8);
+	rounded = 12;
+    move = (square_size/2) - (rounded/2);
+	
+	linear_extrude(height=disc_thickness, convexity=1, scale=[0.97,0.97]) difference(){
+		translate([-move,-move]) minkowski() {			
+			square(square_size-rounded);
+			circle(rounded/2);
+		}
+		union() {
+			translate([-move-6,14.9]) fillet(rounded);
+			translate([-move-14,-9]) minkowski(){
+				square([52, 18]);
+				circle((rounded/2));
+			}
+			translate([-move-6,-14.9]) rotate(180) mirror() fillet(rounded);
+		}
+	}
 }
 
 // main clock parts
 if (!disable_cover_plate) {
-    translate([0, 0, 8]) cover_plate();
+    translate([0, 0, 3.5]) %cover_plate();
 }
 
 difference() {
     union() {
-        display_hour = 11;
+        display_hour = 12;
         display_min  = 25;
         rotate((360 / 12) * (display_hour - 2)) {
             hours_disc();
