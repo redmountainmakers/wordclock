@@ -1,3 +1,5 @@
+include <gears.scad>
+
 clock_r = 104;
 disc_thickness = 2.25;
 
@@ -95,9 +97,14 @@ module hours_disc() {
             
             // center cylinder and gear
             if (!disable_hours_disc) {
-                translate([0, 0, -12]) cylinder(12, 26, 26);
-            }
+                translate([0, 0, -16]) cylinder(16, 26, 26);
+            }		
         }
+		translate([0,0,-16.5])gear(number_of_teeth=36,
+						circular_pitch=220,
+						hub_diameter=0,
+						rim_width=0,
+						hub_thickness=17,rim_thickness=17,gear_thickness=17);
     }
 }
 
@@ -125,13 +132,17 @@ module minutes_disc() {
             
             // center cylinder and gear
             if (!disable_minutes_disc) {
-                translate([0, 0, -10]) cylinder(10, 30, 30);
+				translate([0,0,-3]) gear(number_of_teeth=50,
+						circular_pitch=220,
+						hub_diameter=0,
+						rim_width=0,
+						rim_thickness=5,hub_thickness=5);
             }
         }
         
         // cut out center cylinder where hours disc fits in
         if (!disable_minutes_disc) {
-            translate([0,0,-20]) cylinder(30, 30 - 1.5, 25);
+            translate([0,0,-20]) cylinder(30, 30 - 1.5, 25, $fn=300);
         }
     }
 }
@@ -148,7 +159,7 @@ module cover_plate() {
 	rounded = 12;
     move = (square_size/2) - (rounded/2);
 	
-	linear_extrude(height=disc_thickness, convexity=1, scale=[0.97,0.97]) difference(){
+	linear_extrude(height=disc_thickness, convexity=1, scale=[0.98,0.98]) difference(){
 		translate([-move,-move]) minkowski() {			
 			square(square_size-rounded);
 			circle(rounded/2);
@@ -183,6 +194,7 @@ difference() {
     if (!disable_hours_disc || !disable_hours_text ||
         !disable_minutes_disc || !disable_minutes_text) {
         
-        translate([0,0,-20]) cylinder(15, clock_r+4, clock_r+4);
+        translate([0,0,-21]) cylinder(15, clock_r+4, clock_r+4);
     }
 }
+
