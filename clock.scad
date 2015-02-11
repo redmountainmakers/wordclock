@@ -159,25 +159,97 @@ module cover_plate() {
 	rounded = 12;
     move = (square_size/2) - (rounded/2);
 	
-	linear_extrude(height=disc_thickness, convexity=1, scale=[0.98,0.98]) difference(){
-		translate([-move,-move]) minkowski() {			
+	difference() {
+		linear_extrude(height=disc_thickness) difference(){
+			translate([-move,-move]) minkowski() {			
+				square(square_size-rounded);
+				circle(rounded/2);
+			}
+			union() {
+				translate([-move-6,14.9]) fillet(rounded);
+				translate([-move-14,-9]) minkowski(){
+					square([52, 18]);
+					circle((rounded/2));
+				}
+				translate([-move-6,-14.9]) rotate(180) mirror() fillet(rounded);
+			}
+		}	
+					
+		translate([0,0,-5]) cylinder(6, 4, 4, $fn = 40);
+	}			
+}
+
+module base_plate(height = 16, rounded = 12) {
+	square_size = (clock_r * 1.8);
+    move = (square_size/2) - (rounded/2);
+	difference() {
+		linear_extrude(height+1) translate([-move,-move]) minkowski() {			
 			square(square_size-rounded);
 			circle(rounded/2);
 		}
+		translate([-move+1,-move+1,1.5]) linear_extrude(height)minkowski() {			
+			square(square_size-(rounded+2));
+			circle(rounded/2);
+		}
+	}
+	cylinder(29, 3.78, 3.78, $fn = 40);
+	
+	difference() {
+		cylinder(height + 2.5, 28, 28);
 		union() {
-			translate([-move-6,14.9]) fillet(rounded);
-			translate([-move-14,-9]) minkowski(){
-				square([52, 18]);
-				circle((rounded/2));
+			translate([0, 0, -0.5]) cylinder(height + 4, 25, 25);
+			for (j = [2:3:16]) {
+				for (i = [0:45:179]) {
+					rotate(i + j * 6) translate([0, -40, j]) cube([3, 80, 3]);
+				}
 			}
-			translate([-move-6,-14.9]) rotate(180) mirror() fillet(rounded);
 		}
 	}
 }
 
+module cover_disc() {	
+	difference() {	
+		cylinder(disc_thickness, clock_r + 3, clock_r + 3, $fn = 200);
+		union() {
+			translate([-96,-9, -0.5]) linear_extrude(height=disc_thickness + 1)minkowski(){
+				square([48, 18]);
+				circle((12/2));
+			}
+			translate([0,0,-5]) cylinder(6, 4, 4, $fn = 40);
+		}
+	}
+}
+
+module base_disc(height = 19) {
+	// disc support
+	%difference() {
+		cylinder(height, 28, 28);
+		union() {
+			translate([0, 0, -0.5]) cylinder(height + 1, 25, 25);
+			for (j = [2:3:16]) {
+				for (i = [0:45:179]) {
+					rotate(i + j * 6) translate([0, -40, j]) cube([3, 80, 3]);
+				}
+			}
+		}
+	}
+	
+	// core spindle
+	cylinder(28.25, 3.78, 3.78, $fn = 40);
+	
+	// switch platform
+	translate([-clock_r + 1.25,0,0]) cube([10,10,12]);
+	
+	// main bottom
+	difference() {
+		cylinder(28, clock_r + 3, clock_r + 3, $fn = 200);
+		translate([0,0,1]) cylinder(29, clock_r + 1.5, clock_r + 1.5, $fn = 200);
+	}
+}
+
 // main clock parts
-if (!disable_cover_plate) {
-    translate([0, 0, 3.5]) %cover_plate();
+if (!disable_cover) {
+    %translate([0, 0, 3.5]) cover_disc();
 }
 
 difference() {
@@ -193,8 +265,13 @@ difference() {
     }
     if (!disable_hours_disc || !disable_hours_text ||
         !disable_minutes_disc || !disable_minutes_text) {
-        
-        translate([0,0,-21]) cylinder(15, clock_r+4, clock_r+4);
+		union() {
+        translate([0,0,-50]) cylinder(100, 4, 4, $fn = 100); // main axis cutout
+        translate([0,0,-21]) cylinder(15, clock_r+4, clock_r+4); // normalize bottom
+		}
     }
 }
 
+if (!disable_base) {
+	%translate([0,0,-25.5]) base_disc();
+}
