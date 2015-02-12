@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-pieces="cover_plate hours_disc hours_text minutes_disc minutes_text"
+pieces="cover hours_disc hours_text minutes_disc minutes_text base"
 
 for p in $pieces; do
     echo $p

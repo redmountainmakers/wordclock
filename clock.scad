@@ -16,6 +16,19 @@ hours = [
     "nine",
     "ten",
     "eleven"
+];HOURS = [
+    "TWELVE",
+    "ONE",
+    "TWO",
+    "THREE",
+    "FOUR",
+    "FIVE",
+    "SIX",
+    "SEVEN",
+    "EIGHT",
+    "NINE",
+    "TEN",
+    "ELEVEN"
 ];
 mins = [
     "o'clock",
@@ -33,18 +46,18 @@ mins = [
  ];
 
 module clock_words(
-    from_edge=6.0,
-    letter_depth=disc_thickness,
+    from_edge=4,
+    letter_depth=disc_thickness+1,
     center_offset=0,
-    font_size=12,
+    font_size=11.5,
     words
 ) {
     for (i = [0 : len(words) - 1]) {
         angle = (i + 1) * 360 / len(mins);
         rotate(90 - angle) {
-            translate([-clock_r + from_edge, center_offset]) {
+            translate([-clock_r + from_edge, center_offset,-0.5]) {
                 linear_extrude(height=letter_depth) {
-                    text(words[i], size=font_size);
+                    text(words[i], size=font_size, font="Sirin Stencil:style=Regular");
                 }
             }
         }
@@ -52,93 +65,94 @@ module clock_words(
 }
 
 module hours_disc() {
-    difference() {
-        union() {
-            if (!disable_hours_disc) {
-                difference() {
-                    // hours disc
-                    $fn = 300; cylinder(disc_thickness, r=clock_r);
+	difference() {
+		difference() {
+			if (!disable_hours_disc) {
+				color("lightblue") union() {
+					// hours disc
+					disc_with_slots();
+					
+					// bumps
+					for (i = [0 : len(mins) - 1]) {
+						angle = (i + 1) * 360 / len(mins);
+						rotate(90 - angle) {
+							translate([clock_r - 5, -10, -16]) {
+								cube([4, 4, 18]);
+							}
+						}
+					}
+				
+					// home bump
+					rotate(4) translate([clock_r - 5, -10, -16]) cube([4, 4, 18]);
+			
+					// center cylinder
+					translate([0, 0, -16]) cylinder(16, 26, 26, $fn = 200);			
+				}
+			}
+			// hours text
+			if (!disable_hours_text) {
+				color("blue") clock_words(from_edge=6.5, center_offset=0.5, words=HOURS);
+			}
+		}
+		if (!disable_hours_disc) {
+			translate([0,0,-16.5]) gear(number_of_teeth=36, circular_pitch=220,
+				hub_diameter=0, rim_width=0,
+				hub_thickness=17,rim_thickness=17,gear_thickness=17);
+		}
+	}
+}
 
-                    // see-through slots
-                    for (i = [0 : len(mins) - 1]) {
-                        width = clock_r - 55;
-                        angle = (i + 1) * 360 / len(mins);
-                        rotate(90 - angle) {
-                            translate([52, 2, -0.5]) {
-                                linear_extrude(height=disc_thickness + 1) {
-                                    hull() {
-                                        translate([0, 5]) circle(5.4);
-                                        translate([width - 9, 5]) circle(5.4);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // bumps
-                for (i = [0 : len(mins) - 1]) {
-                    angle = (i + 1) * 360 / len(mins);
-                    rotate(90 - angle) {
-                        translate([clock_r - 5, -10, -16]) {
-                            cube([4, 4, 18]);
-                        }
-                    }
-                }
-            
-                // home bump
-                rotate(10) translate([clock_r - 5, -10, -16]) cube([4, 4, 18]);
-            }
-            
-            // hours text
-            if (!disable_hours_text) {
-                color("blue") clock_words(from_edge=8, center_offset=2.1, words=hours);
-            }
-            
-            // center cylinder and gear
-            if (!disable_hours_disc) {
-                translate([0, 0, -16]) cylinder(16, 26, 26);
-            }		
-        }
-		translate([0,0,-16.5])gear(number_of_teeth=36,
-						circular_pitch=220,
-						hub_diameter=0,
-						rim_width=0,
-						hub_thickness=17,rim_thickness=17,gear_thickness=17);
-    }
+module disc_with_slots(r=clock_r, slot_width=clock_r - 55, slot_r=5.4, offset=[52,2,-0.5]){
+	difference() {
+		cylinder(disc_thickness, r, r, $fn=300);
+							
+		// see-through slots
+		for (i = [0 : len(mins) - 1]) {
+			angle = (i + 1) * 360 / len(mins);
+			rotate(90 - angle) {
+				translate(offset) {
+					linear_extrude(height=disc_thickness + 1) {
+						hull() {
+							translate([0, slot_r]) circle(slot_r);
+							translate([slot_width - (slot_r*2), slot_r]) circle(slot_r);
+						}
+					}
+				}
+			}
+		}	
+	}
 }
 
 module minutes_disc() {
-    difference() {
-        union() {
-            if (!disable_minutes_disc) {
-                // minutes disc
-                $fn = 300; color("pink") cylinder(disc_thickness, r=clock_r - 6);
-                
-                // bumps
-                for (i = [0 : len(mins) - 1]){
-                    angle = (i + 1) * 360 / len(mins);
-                    rotate(90-angle) translate([clock_r - 11, -10, -8]) cube([4,4,8]);
-                }
-                
-                // home bump
-                rotate(10) translate([clock_r - 11, -10, -8]) cube([4, 4, 8]);
-            }
-            
-            // hours text
-            if (!disable_minutes_text) {
-                color("red") clock_words(from_edge=10, center_offset=-10, font_size=7, words=mins);
-            }
-            
-            // center cylinder and gear
-            if (!disable_minutes_disc) {
-				translate([0,0,-3]) gear(number_of_teeth=50,
-						circular_pitch=220,
-						hub_diameter=0,
-						rim_width=0,
-						rim_thickness=5,hub_thickness=5);
-            }
-        }
+	difference() {
+		difference() {
+			if (!disable_minutes_disc) {
+				color("pink") union() {					
+					// minutes disc (make it smaller)
+					disc_with_slots(r = clock_r - 6, slot_width=clock_r - 45, slot_r=6.8, offset=[50,-12.6,-0.5]);				
+									
+					// bumps
+					for (i = [0 : len(mins) - 1]){
+						angle = (i + 1) * 360 / len(mins);
+						rotate(90-angle) translate([90, 22, -8]) cube([4,4,8]);
+					}
+					
+					// home bump
+					rotate(4) translate([90, 22, -8]) cube([4, 4, 8]);
+				
+					// center cylinder and gear
+					translate([0,0,-3]) gear(number_of_teeth=50,
+							circular_pitch=220,
+							hub_diameter=0,
+							rim_width=0,
+							rim_thickness=5,hub_thickness=5);
+				}
+			}            
+			// hours text
+			if (!disable_minutes_text) {
+				color("red") clock_words(from_edge=10, center_offset=-9.5, font_size=6.5, words=mins);
+			}
+		}
         
         // cut out center cylinder where hours disc fits in
         if (!disable_minutes_disc) {
@@ -285,19 +299,15 @@ module base_disc(height = 19) {
 
 // main clock parts
 if (!disable_cover) {
-    %translate([0, 0, 3.5]) cool_cover_disc();
+    *translate([0, 0, 3.5]) cool_cover_disc();
 }
 
 difference() {
     union() {
         display_hour = 12;
         display_min  = 25;
-        rotate((360 / 12) * (display_hour - 2)) {
-            hours_disc();
-        }
-        rotate((360 / 60) * (display_min - 10)) {
-            translate([0, 0, -3.5]) minutes_disc();
-        }
+        rotate((360 / 12) * (display_hour - 2)) hours_disc();
+        rotate((360 / 60) * (display_min - 10)) translate([0, 0, -3.5]) minutes_disc();
     }
     if (!disable_hours_disc || !disable_hours_text ||
         !disable_minutes_disc || !disable_minutes_text) {
@@ -309,5 +319,5 @@ difference() {
 }
 
 if (!disable_base) {
-	%translate([0,0,-25.5]) base_disc();
+	*translate([0,0,-25.5]) base_disc();
 }
