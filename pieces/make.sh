@@ -6,8 +6,11 @@ cd "$(dirname "$0")"
 
 openscad="/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"
 
-for i in *.scad; do
-    stl="${i%.scad}.stl"
+#pieces="cover_plate hours_disc hours_text minutes_disc minutes_text base"
+pieces="cover_plate hours_disc minutes_disc base"
+
+for p in $pieces; do
+    stl="$p.stl"
     echo "Generating $stl"
-    "$openscad" "$i" -o "$stl"
+    "$openscad" "$p.scad" -o "$stl"
 done
