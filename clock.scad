@@ -58,7 +58,7 @@ module clock_words(
         rotate(90 - angle) {
             translate([-clock_r + from_edge, center_offset,-0.5]) {
                 linear_extrude(height=letter_depth) {
-                    text(words[i], size=font_size, font="Sirin Stencil:style=Regular");
+                    text(words[i], size=font_size, font="Gunplay");
                 }
             }
         }
@@ -93,6 +93,20 @@ module hours_disc() {
             // hours text
             if (!disable_hours_text) {
                 color("blue") clock_words(from_edge=6.5, center_offset=0.5, words=HOURS);
+                // subtract some of the hours text from the first layer
+                // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
+                outline_z = disc_thickness + 0.2;
+                // outline distance away from main text
+                outline_r = 0.8;
+                for (theta = [0 : 30 : 359]) {
+                    translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
+                        color("dodgerblue") clock_words(
+                            from_edge=6.5,
+                            center_offset=0.5,
+                            letter_depth=1,
+                            words=HOURS);
+                    }
+                }
             }
         }
         if (!disable_hours_disc) {
@@ -149,9 +163,24 @@ module minutes_disc() {
                             rim_thickness=5,hub_thickness=5);
                 }
             }
-            // hours text
+            // minutes text
             if (!disable_minutes_text) {
                 color("red") clock_words(from_edge=10, center_offset=-9.5, font_size=6.5, words=mins);
+                // subtract some of the minutes text from the first layer
+                // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
+                outline_z = disc_thickness + 0.2;
+                // outline distance away from main text
+                outline_r = 0.6;
+                for (theta = [0 : 30 : 359]) {
+                    translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
+                        color("mediumvioletred") clock_words(
+                            from_edge=10,
+                            center_offset=-9.5,
+                            font_size=6.5,
+                            letter_depth=1,
+                            words=mins);
+                    }
+                }
             }
         }
 
