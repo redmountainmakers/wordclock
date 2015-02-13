@@ -91,7 +91,7 @@ module hours_disc() {
                 }
             }
             // hours text
-            if (!disable_hours_text) {
+            if (!disable_hours_text || !disable_hours_disc) {
                 color("blue") clock_words(from_edge=6.5, center_offset=0.5, words=HOURS);
                 // subtract some of the hours text from the first layer
                 // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
@@ -164,7 +164,7 @@ module minutes_disc() {
                 }
             }
             // minutes text
-            if (!disable_minutes_text) {
+            if (!disable_minutes_text || !disable_minutes_disc) {
                 color("red") clock_words(from_edge=10, center_offset=-9.5, font_size=6.5, words=mins);
                 // subtract some of the minutes text from the first layer
                 // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
@@ -328,8 +328,8 @@ module base_disc(height = 19) {
 }
 
 // main clock parts
-if (!disable_cover) {
-    *translate([0, 0, 3.5]) cool_cover_disc();
+if (!disable_cover_plate) {
+    translate([0, 0, 3.5]) cool_cover_disc();
 }
 
 difference() {
@@ -349,5 +349,5 @@ difference() {
 }
 
 if (!disable_base) {
-    *translate([0,0,-25.5]) base_disc();
+    translate([0,0,-25.5]) base_disc();
 }

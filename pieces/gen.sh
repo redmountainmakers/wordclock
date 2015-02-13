@@ -1,8 +1,10 @@
 #!/bin/sh
 
+# Generate the .scad files for the individual pieces
+
 cd "$(dirname "$0")"
 
-pieces="cover hours_disc hours_text minutes_disc minutes_text base"
+pieces="cover_plate hours_disc hours_text minutes_disc minutes_text base"
 
 for p in $pieces; do
     echo $p
