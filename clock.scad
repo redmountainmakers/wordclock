@@ -156,11 +156,12 @@ module minutes_disc() {
                     rotate(4) translate([90, 22, -8]) cube([4, 4, 8]);
 
                     // center cylinder and gear
-                    translate([0,0,-3]) gear(number_of_teeth=50,
+                    translate([0,0,-3]) gear(number_of_teeth=52,
                             circular_pitch=220,
                             hub_diameter=0,
                             rim_width=0,
-                            rim_thickness=5,hub_thickness=5);
+                            rim_thickness=5,
+                            hub_thickness=5);
                 }
             }
             // minutes text
@@ -186,7 +187,12 @@ module minutes_disc() {
 
         // cut out center cylinder where hours disc fits in
         if (!disable_minutes_disc) {
-            translate([0,0,-20]) cylinder(30, 30 - 1.5, 25, $fn=300);
+            gap_between_discs = 2;
+            translate([0,0,-20]) cylinder(
+                30,
+                r1=30 - gap_between_discs,
+                r2=30 - gap_between_discs,
+                $fn=300);
         }
     }
 }
