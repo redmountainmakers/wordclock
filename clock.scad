@@ -1,131 +1,35 @@
 include <gears.scad>
+include <utils.scad>
+
+disable_cover_plate = true;
+disable_hours_disc = true;
+disable_hours_text = true;
+disable_minutes_disc = true;
+disable_minutes_text = true;
+disable_base = false;
+
+enable_text_chamfer = true; // only for 3d-printing
 
 clock_r = 104;
+axis_r = 3.7;
 disc_thickness = 2.25;
 wall_thickness = 2;
-axis_r = 3.7;
-
-hours = [
-    "twelve",
-    "one",
-    "two",
-    "three",
-    "four",
-    "five",
-    "six",
-    "seven",
-    "eight",
-    "nine",
-    "ten",
-    "eleven"
-];
-HOURS = [
-    "TWELVE",
-    "ONE",
-    "TWO",
-    "THREE",
-    "FOUR",
-    "FIVE",
-    "SIX",
-    "SEVEN",
-    "EIGHT",
-    "NINE",
-    "TEN",
-    "ELEVEN"
-];
-mins = [
-    "o'clock",
-    "oh five",
-    "ten",
-    "fifteen",
-    "twenty",
-    "twenty-five",
-    "thirty",
-    "thirty-five",
-    "forty",
-    "forty-five",
-    "fifty",
-    "fifty-five"
-];
-
-module clock_words(
-    from_edge=4,
-    letter_depth=disc_thickness+1,
-    center_offset=0,
-    font_size=11.5,
-    words
-) {
-    for (i = [0 : len(words) - 1]) {
-        angle = (i + 1) * 360 / len(mins);
-        rotate(90 - angle) {
-            translate([-clock_r + from_edge, center_offset,-0.5]) {
-                linear_extrude(height=letter_depth) {
-                    text(words[i], size=font_size, font="Gunplay");
-                }
-            }
-        }
-    }
-}
-
-module fillet(r) {
-    translate([r / 2, r / 2, 0]) difference() {
-        square([r + 0.01, r + 0.01], center = true);
-        translate([r/2, r/2]) circle(r = r, center = true);
-    }
-}
-
-module rounded_rect(w=51, l=21, h=disc_thickness, r=6) {
-	linear_extrude(height = h) minkowski() {
-		square([w-r, l-r]);
-		circle(r);
-	}
-}
-
-module ring(r1=disc_r, r2=disc_r-3, h=disc_thickness) {
-    difference() {
-        cylinder(h, r1, r1, $fn = 200);
-        translate([0,0,-0.5]) cylinder(h + 1, r2, r2, $fn = 200);
-    }
-}
-
-module disc_with_pattern(r=clock_r,h=disc_thickness+4) {
-	difference() {
-		cylinder(disc_thickness, r1=r, r2=r, $fn = 200);
-		translate([-r-1,-r-4,2]) scale(3) linear_extrude(height = h, center = true, convexity = 10) {
-			for (k = [0:5:r / 1.4]) {
-				for (i = [0:3:r / 1.4]) {
-				   translate([k, i]) import (file = "egypt pattern.dxf");
-				}
-				for (j = [0:3:r / 1.4]) {
-					   translate([k + 2.5, j+1.5]) import (file = "egypt pattern.dxf");
-				}
-			}
-		}
-	}
-}
-
-module disc_with_slots(r=clock_r, slot_width=clock_r - 55, slot_r=5.4, offset=[52,2,-0.5]){
-    difference() {
-        cylinder(disc_thickness, r, r, $fn=300);
-
-        // see-through slots
-        for (i = [0 : len(mins) - 1]) {
-            angle = (i + 1) * 360 / len(mins);
-            rotate(90 - angle) {
-                translate(offset) {
-                    linear_extrude(height=disc_thickness + 1) {
-                        hull() {
-                            translate([0, slot_r]) circle(slot_r);
-                            translate([slot_width - (slot_r*2), slot_r]) circle(slot_r);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 module hours_disc() {
+	HOURS = [
+		"TWELVE",
+		"ONE",
+		"TWO",
+		"THREE",
+		"FOUR",
+		"FIVE",
+		"SIX",
+		"SEVEN",
+		"EIGHT",
+		"NINE",
+		"TEN",
+		"ELEVEN"
+	];
     difference() {
         difference() {
             if (!disable_hours_disc) {
@@ -153,20 +57,22 @@ module hours_disc() {
             // hours text
             if (!disable_hours_text || !disable_hours_disc) {
                 color("blue") clock_words(from_edge=6.5, center_offset=0.5, words=HOURS);
-//                // subtract some of the hours text from the first layer
-//                // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
-//                outline_z = disc_thickness + 0.2;
-//                // outline distance away from main text
-//                outline_r = 0.8;
-//                for (theta = [0 : 30 : 359]) {
-//                    translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
-//                        color("dodgerblue") clock_words(
-//                            from_edge=6.5,
-//                            center_offset=0.5,
-//                            letter_depth=1,
-//                            words=HOURS);
-//                    }
-//                }
+				if (enable_text_chamfer) {
+				   // subtract some of the hours text from the first layer
+				   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
+				   outline_z = disc_thickness + 0.2;
+				   // outline distance away from main text
+				   outline_r = 0.8;
+				   for (theta = [0 : 30 : 359]) {
+					   translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
+						   color("dodgerblue") clock_words(
+							   from_edge=6.5,
+							   center_offset=0.5,
+							   letter_depth=1,
+							   words=HOURS);
+					   }
+				   }
+			   }
             }
         }
         if (!disable_hours_disc) {
@@ -178,6 +84,20 @@ module hours_disc() {
 }
 
 module minutes_disc() {
+	mins = [
+		"o'clock",
+		"oh five",
+		"ten",
+		"fifteen",
+		"twenty",
+		"twenty-five",
+		"thirty",
+		"thirty-five",
+		"forty",
+		"forty-five",
+		"fifty",
+		"fifty-five"
+	];
     difference() {
         difference() {
             if (!disable_minutes_disc) {
@@ -206,21 +126,23 @@ module minutes_disc() {
             // minutes text
             if (!disable_minutes_text || !disable_minutes_disc) {
                 color("red") clock_words(from_edge=10, center_offset=-9.5, font_size=6.5, words=mins);
-//                // subtract some of the minutes text from the first layer
-//                // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
-//                outline_z = disc_thickness + 0.2;
-//                // outline distance away from main text
-//                outline_r = 0.6;
-//                for (theta = [0 : 30 : 359]) {
-//                    translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
-//                        color("mediumvioletred") clock_words(
-//                            from_edge=10,
-//                            center_offset=-9.5,
-//                            font_size=6.5,
-//                            letter_depth=1,
-//                            words=mins);
-//                    }
-//                }
+				if (enable_text_chamfer) {
+				   // subtract some of the minutes text from the first layer
+				   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
+				   outline_z = disc_thickness + 0.2;
+				   // outline distance away from main text
+				   outline_r = 0.6;
+				   for (theta = [0 : 30 : 359]) {
+					   translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
+						   color("mediumvioletred") clock_words(
+							   from_edge=10,
+							   center_offset=-9.5,
+							   font_size=6.5,
+							   letter_depth=1,
+							   words=mins);
+					   }
+				   }
+			   }
             }
         }
 
@@ -325,7 +247,7 @@ difference() {
         !disable_minutes_disc || !disable_minutes_text) {
         union() {
             translate([0,0,-50]) cylinder(100, 4, 4, $fn = 100); // main axis cutout
-            translate([0,0,-21]) cylinder(15, clock_r+4, clock_r+4); // normalize bottom
+            translate([0,0,-21]) cylinder(14, clock_r+4, clock_r+4); // normalize bottom
         }
     }
 }
