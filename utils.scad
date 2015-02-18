@@ -26,8 +26,8 @@ module fillet(r) {
 }
 
 module rounded_rect(w=51, l=21, h=2.25, r=6) {
-	linear_extrude(height = h) minkowski() {
-		square([w-r, l-r]);
+	translate([r, r, 0]) linear_extrude(height = h) minkowski() {
+		square([w-r*2, l-r*2]);
 		circle(r);
 	}
 }
@@ -56,7 +56,7 @@ module disc_with_pattern(r=104, h=2.25) {
 	}
 }
 
-module disc_with_slots(r=104, h=2.25, slots=12, slot_width=104 - 55, slot_r=5.4, offset=[52,2,-0.5]){
+module disc_with_slots(r=104, h=2.25, slots=12, slot_width=100, slot_r=5, offset=[50,0,-0.5]){
     difference() {
         cylinder(h, r, r, $fn=300);
 
@@ -76,3 +76,6 @@ module disc_with_slots(r=104, h=2.25, slots=12, slot_width=104 - 55, slot_r=5.4,
         }
     }
 }
+
+//rounded_rect(50, 100, 4, 6);
+//cube([50, 100, 4]);
