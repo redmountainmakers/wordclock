@@ -4,16 +4,16 @@ include <utils.scad>
 disable_cover_plate = true;
 disable_hours_disc = true;
 disable_hours_text = true;
-disable_minutes_disc = true;
+disable_minutes_disc = false;
 disable_minutes_text = true;
-disable_base = false;
+disable_base = true;
 
 enable_text_chamfer = true; // only for 3d-printing
 
 clock_r = 97;
 motor_r = 12;
 motor_h = 16;
-clearance = 0.75;
+clearance = 0.5;
 axis_r = 3.7;
 disc_thickness = 2.25;
 wall_thickness = 2;
@@ -21,6 +21,7 @@ font_size = clock_r * .11; // scale font based on radius
 
 module hours_disc() {
 	r = clock_r - (wall_thickness + clearance);
+	bump_h = disc_thickness + clearance + 4;
 	HOURS = [
 		"TWELVE",
 		"ONE",
@@ -42,21 +43,22 @@ module hours_disc() {
                     // hours disc
                     disc_with_slots(r=r, slot_width=r*.5, offset=[r*.5,1,-0.5]);
 
-                    // // bumps
-                    // for (i = [0 : len(mins) - 1]) {
-                        // angle = (i + 1) * 360 / len(mins);
-                        // rotate(90 - angle) {
-                            // translate([r - 5, -10, -16]) {
-                                // cube([4, 4, 18]);
-                            // }
-                        // }
-                    // }
+					// small spacer ring
+					translate([0,0,-.5]) ring(r1 = 34, r2 = 34 - 1.5, h = clearance);
+					
+                    // bumps
+                    for (i = [0 : len(HOURS) - 1]) {
+                        angle = (i + 1) * 360 / len(HOURS);
+                        rotate(90 - angle) {
+                            translate([r - 4.2, -22, -bump_h]) cylinder(bump_h, 1.5, 1.5);
+                        }
+                    }
 
-                    // // home bump
-                    // rotate(4) translate([r - 5, -10, -16]) cube([4, 4, 18]);
+                    // home bump
+                    rotate(-4) translate([r - 4.2, -22, -bump_h]) cylinder(bump_h, 1.5, 1.5);
 
                     // center cylinder
-                    translate([0, 0, -16]) cylinder(16, 26, 26, $fn = 200);
+                    translate([0, 0, -bump_h]) cylinder(bump_h, 26, 26, $fn = 200);
                 }
             }
             // hours text
@@ -77,15 +79,15 @@ module hours_disc() {
             }
         }
         if (!disable_hours_disc) {
-            translate([0,0,-16.5]) gear(number_of_teeth=36, circular_pitch=220,
+            translate([0,0,-(bump_h + .5)]) gear(number_of_teeth=36, circular_pitch=220,
                 hub_diameter=0, rim_width=0,
-                hub_thickness=17,rim_thickness=17,gear_thickness=17);
+                hub_thickness=bump_h + 1,rim_thickness=bump_h + 1,gear_thickness=bump_h + 1);
         }
     }
 }
 
 module minutes_disc() {
-	r = clock_r - (wall_thickness + clearance + 2);
+	r = clock_r - (wall_thickness + clearance + 3.5);
 	mins = [
 		"o'clock",
 		"oh five",
@@ -107,22 +109,24 @@ module minutes_disc() {
                     // minutes disc (make it smaller)
                     disc_with_slots(r = r, slot_width=r*.7, slot_r=font_size*.6, offset=[r*.5,-12,-0.5]);
 
-                    // // bumps
-                    // for (i = [0 : len(mins) - 1]){
-                        // angle = (i + 1) * 360 / len(mins);
-                        // rotate(90-angle) translate([90, 22, -8]) cube([4,4,8]);
-                    // }
+                    // bumps
+                    for (i = [0 : len(mins) - 1]) {
+                        angle = (i + 1) * 360 / len(mins);
+                        rotate(90 - angle) {
+                            translate([r - 4.2, -22, -4]) cylinder(4, 1.5, 1.5);
+                        }
+                    }
 
-                    // // home bump
-                    // rotate(4) translate([90, 22, -8]) cube([4, 4, 8]);
+                    // home bump
+                    rotate(-4) translate([r - 4.2, -22, -4]) cylinder(4, 1.5, 1.5);
 
                     // center cylinder and gear
-                    translate([0,0,-3]) gear(number_of_teeth=52,
+                    translate([0,0,-4]) gear(number_of_teeth=52,
                             circular_pitch=220,
                             hub_diameter=0,
                             rim_width=0,
-                            rim_thickness=5,
-                            hub_thickness=5);
+                            rim_thickness=4,
+                            hub_thickness=4);
                 }
             }
             // minutes text
@@ -193,7 +197,7 @@ module cover_disc() {
     }
 }
 
-module cool_cover_disc(r = clock_r, h=16.5) {
+module cool_cover_disc(r = clock_r, h=17) {
 	rect_w = r*.6;
 	rect_h = r*.28;
     difference() {	
@@ -221,7 +225,7 @@ module base_disc(r = clock_r, height = 16, disc_support = 19) {
 	}
 
     // core spindle
-    cylinder(28.25, axis_r, axis_r, $fn = 40);
+    cylinder(29, axis_r, axis_r, $fn = 40);
 
     // switch platform
     translate([clock_r - (wall_thickness + 10),0,0]) cube([10,10,12]);
@@ -237,7 +241,7 @@ module base_disc(r = clock_r, height = 16, disc_support = 19) {
 
 // main clock parts
 if (!disable_cover_plate) {
-    translate([0, 0, 3.25]) cool_cover_disc();
+    translate([0, 0, disc_thickness + clearance]) cool_cover_disc();
 }
 
 difference() {
@@ -245,17 +249,16 @@ difference() {
         display_hour = 11;
         display_min  = 25;
         rotate((360 / 12) * (display_hour - 2)) hours_disc();
-        rotate((360 / 60) * (display_min - 10)) translate([0, 0, -(disc_thickness + 1.25)]) minutes_disc();
+        rotate((360 / 60) * (display_min - 10)) translate([0, 0, -(disc_thickness + clearance)]) minutes_disc();
     }
     if (!disable_hours_disc || !disable_hours_text ||
         !disable_minutes_disc || !disable_minutes_text) {
         union() {
             translate([0,0,-50]) cylinder(100, 4, 4, $fn = 100); // main axis cutout
-            translate([0,0,-21]) cylinder(14, clock_r+4, clock_r+4); // normalize bottom
         }
     }
 }
 
 if (!disable_base) {
-    translate([0,0,-25.5]) base_disc();
+    translate([0,0,-25.75]) base_disc();
 }
