@@ -54,7 +54,7 @@ module hours_disc() {
 				translate([0, 0, -bump_h]) cylinder(bump_h, 26, 26, $fn = 200);
 			}
             // hours text
-			color("blue") clock_words(from_edge=8, font_size=font_size, words=HOURS);
+			color("blue") clock_words(from_edge=6, font_size=font_size, words=HOURS);
 			if (enable_text_chamfer) {
 			   // subtract some of the hours text from the first layer
 			   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
@@ -94,7 +94,7 @@ module minutes_disc() {
         difference() {
 			color("pink") union() {
 				// minutes disc (make it smaller)
-				disc_with_slots(r = r, slot_width=r*.7, slot_r=font_size*.6, offset=[r*.5,-12,-0.5]);
+				disc_with_slots(r = r, slot_width=r, slot_r=font_size*.6, offset=[r*.5,-12,-0.5]);
 
 				rotate_360(12) {
 					rotate(13) translate([0, r -20, 0]) mirror([0,0,1]) straight_nub();
@@ -113,7 +113,8 @@ module minutes_disc() {
 			}
 				
             // minutes text
-			color("red") clock_words(from_edge=10, center_offset=-8.8, font_size=6.5, words=mins);
+			
+			color("red") clock_words(from_edge=8.5, center_offset=-8.8, font_size=6.8, words=mins);
 			if (enable_text_chamfer) {
 			   // subtract some of the minutes text from the first layer
 			   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
@@ -122,7 +123,7 @@ module minutes_disc() {
 			   outline_r = 0.6;
 			   for (theta = [0 : 30 : 359]) {
 				   translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
-					   color("mediumvioletred") clock_words(from_edge=10, center_offset=-8.8, font_size=6.5, words=mins);
+					   color("mediumvioletred") clock_words(from_edge=8.5, center_offset=-8.8, font_size=6.8, words=mins);
 				   }
 			   }
 		   }
