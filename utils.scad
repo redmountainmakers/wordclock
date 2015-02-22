@@ -77,5 +77,29 @@ module disc_with_slots(r=104, h=2.25, slots=12, slot_width=100, slot_r=5, offset
     }
 }
 
+module rotate_360(count = 12) {
+	for (i = [0 : count - 1]) {
+		angle = (i + 1) * 360 / count;
+		rotate(90 - angle) {
+			children();
+		}
+	}
+}
+
+module straight_nub(w = 2, h = 4, l = 10) {
+	difference() {
+		cube([w,l*2,h]);
+		 rotate([45,0,0])cube([w+1,l*2,h]);
+	}
+}
+
+module circular_nub(r = 100, w = 2, h = 6.75) {
+	intersection() {
+		ring(r,r-w,h);
+		rotate([0,40,0]) translate([-h, r - (h*2), -h-4.5]) cube([40, w*8, w*8]);
+	}
+}
+
+
 //rounded_rect(50, 100, 4, 6);
 //cube([50, 100, 4]);
