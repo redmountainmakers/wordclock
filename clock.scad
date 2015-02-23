@@ -1,10 +1,10 @@
 include <gears.scad>
 include <utils.scad>
 
-disable_cover_plate		= false;
+disable_cover_plate		= true;
 disable_hours_disc		= false;
-disable_minutes_disc	= false;
-disable_base			= false;
+disable_minutes_disc	= true;
+disable_base			= true;
 
 enable_text_chamfer = false; // only for 3d-printing
 
@@ -200,6 +200,9 @@ module base_disc(r = clock_r, height = 16, disc_support_r = 29, disc_support_h =
 }
 
 // main clock parts
+intersection() {
+
+union() {
 if (!disable_cover_plate) {
     translate([0, 0, disc_thickness + clearance]) cool_cover_disc();
 }
@@ -225,4 +228,8 @@ if (!disable_hours_disc || !disable_minutes_disc) {
 
 if (!disable_base) {
     translate([0,0,-25.75]) base_disc();
+}
+}
+
+	translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);
 }
