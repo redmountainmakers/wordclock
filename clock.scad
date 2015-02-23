@@ -13,6 +13,7 @@ motor_r = 12;
 motor_h = 16;
 clearance = 0.5;
 axis_r = 2.5;
+mid_disc_axis = 27;
 disc_thickness = 2.25;
 wall_thickness = 2;
 font_size = clock_r * .105; // scale font based on radius
@@ -51,7 +52,8 @@ module hours_disc() {
 				rotate(21) mirror([0,0,1]) circular_nub(r,h=bump_h);
 
 				// center cylinder
-				translate([0, 0, -bump_h]) cylinder(bump_h, 26, 26, $fn = 200);
+				mid_axis = mid_disc_axis - clearance/2;
+				translate([0, 0, -bump_h]) cylinder(bump_h, mid_axis, mid_axis, $fn = 200);
 			}
             // hours text
 			color("blue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
@@ -68,7 +70,7 @@ module hours_disc() {
 			   }
 		   }
         }
-		translate([0,0,-(bump_h + .5)]) gear(number_of_teeth=36, circular_pitch=220,
+		translate([0,0,-(bump_h + .5)]) gear(number_of_teeth=38, circular_pitch=220,
 			hub_diameter=0, rim_width=0,
 			hub_thickness=bump_h + 1,rim_thickness=bump_h + 1,gear_thickness=bump_h + 1);
     }
@@ -112,8 +114,7 @@ module minutes_disc() {
 						hub_thickness=4);
 			}
 				
-            // minutes text
-			
+            // minutes text			
 			color("red") clock_words(from_edge=8.5, center_offset=-8.8, font_size=6.8, words=mins);
 			if (enable_text_chamfer) {
 			   // subtract some of the minutes text from the first layer
@@ -129,12 +130,12 @@ module minutes_disc() {
 		   }
         }
 
-        // cut out center cylinder where hours disc fits in
-		gap_between_discs = 2.75;
+        // cut out center cylinder where hours disc fits in		
+		mid_axis = mid_disc_axis + clearance/2;
 		translate([0,0,-20]) cylinder(
 			30,
-			r1=30 - gap_between_discs,
-			r2=30 - gap_between_discs,
+			r1=mid_axis,
+			r2=mid_axis,
 			$fn=300);
     }
 }
