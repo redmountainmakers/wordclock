@@ -2,9 +2,9 @@ include <gears.scad>
 include <utils.scad>
 
 disable_cover_plate		= true;
-disable_hours_disc		= false;
+disable_hours_disc		= true;
 disable_minutes_disc	= true;
-disable_base			= true;
+disable_base			= false;
 
 enable_text_chamfer = false; // only for 3d-printing
 
@@ -13,7 +13,7 @@ motor_r = 12;
 motor_h = 16;
 clearance = 0.5;
 axis_r = 2.5;
-mid_disc_axis = 27;
+mid_axis_r = 27;
 disc_thickness = 2.25;
 wall_thickness = 2;
 font_size = clock_r * .105; // scale font based on radius
@@ -51,24 +51,15 @@ module hours_disc() {
 				// home bump
 				rotate(21) mirror([0,0,1]) circular_nub(r,h=bump_h);
 
-				// center cylinder
-				mid_axis = mid_disc_axis - clearance/2;
-				translate([0, 0, -bump_h]) cylinder(bump_h, mid_axis, mid_axis, $fn = 200);
+				// axis that minutes rotates around
+				mid_r = mid_axis_r - clearance/2;
+				translate([0, 0, -bump_h]) cylinder(bump_h, mid_r, mid_r, $fn = 200);
 			}
+            
             // hours text
-			color("blue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
-			if (enable_text_chamfer) {
-			   // subtract some of the hours text from the first layer
-			   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
-			   outline_z = disc_thickness + 0.2;
-			   // outline distance away from main text
-			   outline_r = 0.8;
-			   for (theta = [0 : 30 : 359]) {
-				   translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
-					   color("dodgerblue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
-				   }
-			   }
-		   }
+            chamfer(apply = enable_text_chamfer, outline_z=disc_thickness + 0.2) {
+               color("dodgerblue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
+            }
         }
 		translate([0,0,-(bump_h + .5)]) gear(number_of_teeth=38, circular_pitch=220,
 			hub_diameter=0, rim_width=0,
@@ -114,29 +105,15 @@ module minutes_disc() {
 						hub_thickness=4);
 			}
 				
-            // minutes text			
-			color("red") clock_words(from_edge=8.5, center_offset=-8.8, font_size=6.8, words=mins);
-			if (enable_text_chamfer) {
-			   // subtract some of the minutes text from the first layer
-			   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
-			   outline_z = disc_thickness + 0.2;
-			   // outline distance away from main text
-			   outline_r = 0.6;
-			   for (theta = [0 : 30 : 359]) {
-				   translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
-					   color("mediumvioletred") clock_words(from_edge=8.5, center_offset=-8.8, font_size=6.8, words=mins);
-				   }
-			   }
-		   }
+            // minutes text		
+            chamfer(apply = enable_text_chamfer, outline_z=disc_thickness + 0.2) {
+                color("red") clock_words(from_edge=8.5, center_offset=-8.8, font_size=6.8, words=mins);
+            }
         }
 
         // cut out center cylinder where hours disc fits in		
-		mid_axis = mid_disc_axis + clearance/2;
-		translate([0,0,-20]) cylinder(
-			30,
-			r1=mid_axis,
-			r2=mid_axis,
-			$fn=300);
+		cut_r = mid_axis_r + clearance/2;
+		translate([0,0,-20]) cylinder(30, r1=cut_r, r2=cut_r, $fn=300);
     }
 }
 
@@ -159,25 +136,14 @@ module cool_cover_disc(r = clock_r, h=17) {
     }
 }
 
-module base_disc(r = clock_r, height = 16, disc_support_r = 29, disc_support_h = 19) {
+module base_disc(r = clock_r, height = 16, disc_support_r = mid_axis_r, disc_support_h = 19) {
 	axis_h = 29;
 	difference() {
 		union() {
 			// disc support with motor holes
-			difference() {
-				union() {
-					cylinder(disc_support_h-1, axis_r*6, axis_r, $fn = 60); // core spindle cone to strengthen for motor cut-out
-					cylinder(axis_h, axis_r, axis_r, $fn = 60); // core spindle
-					ring(r1=disc_support_r, r2=disc_support_r-(wall_thickness*2), h = disc_support_h);
-				}
-				motor_r_cutout = motor_r + clearance;
-				translate([-12.5,0, 0]) cylinder(motor_h + 0.5, motor_r_cutout, motor_r_cutout); // cut-out for motor 1 on spindle
-				translate([-22,0, 0]) cylinder(motor_h * 2, motor_r_cutout, motor_r_cutout); // motor 1 move over so it can fit
-				translate([34, 0, 0]) cylinder(motor_h * 2, motor_r_cutout, motor_r_cutout); // motor 2
-			}
-			
-			// overhang support (to be removed after print)
-			color("darkred") translate([-2.5,0,0]) cylinder(motor_h+0.5, 1.25, 1.25);
+            cylinder(disc_support_h-1, axis_r*6, axis_r, $fn = 60); // core spindle cone to strengthen for motor cut-out
+            cylinder(axis_h, axis_r, axis_r, $fn = 60); // core spindle
+            ring(r1=disc_support_r, r2=disc_support_r-(wall_thickness*2), h = disc_support_h);
 
 			// switch platform
 			rotate(-12) translate([clock_r - (wall_thickness + 10),0,0]) cube([10,10,12]);
@@ -188,16 +154,25 @@ module base_disc(r = clock_r, height = 16, disc_support_r = 29, disc_support_h =
 				cylinder(height - disc_thickness, r, r, $fn = 200);
 				translate([0,0,disc_thickness]) cylinder(height - disc_thickness, r - wall_thickness * 1.5, r - wall_thickness*1.5, $fn = 200);
 				translate([0,0,height-disc_thickness-4]) ring(r1=snapfit + 10, r2=snapfit, h=4.5); // notch for snap fit
+                
+                // clear out a bunch of material from bottom
+                translate([0,0,-0.5]) ring(r1=r - 12, r2=r - r/2, h = disc_thickness + 1);
 			}
+            
+            // but leave a support structure on the bottom
+            rotate_360(12){
+                translate([disc_support_r-wall_thickness,-disc_thickness*2, 0]) cube([r - disc_support_r, disc_thickness*4, disc_thickness]);
+            }
 		}
-		// clear out a bunch of material from bottom
-		translate([0,0,-0.5]) ring(r1=r - 12, r2=r - r/2, h = disc_thickness + 1);
-	}
-				
-	// but leave a support structure on the bottom
-	rotate_360(12){
-		translate([disc_support_r-wall_thickness,-disc_thickness*2, 0]) cube([r - disc_support_r, disc_thickness*4, disc_thickness]);
-	}
+        // clear out spots for motors
+        motor_r_cutout = motor_r + clearance;
+        color("whitesmoke") translate([-12.5,0, 0.6]) cylinder(motor_h + clearance, motor_r_cutout, motor_r_cutout); // cut-out for motor 1 on spindle
+        translate([-22,0, 0.6]) cylinder(motor_h + 1, motor_r_cutout, motor_r_cutout); // motor 1 move over so it can fit
+        translate([34, 0, 0.6]) cylinder(motor_h + 1, motor_r_cutout, motor_r_cutout); // motor 2
+    }    
+			
+    // overhang support (to be removed after print)
+    color("darkred") translate([-2.5,0,0.5]) cylinder(motor_h+.75, 1.25, 1.25);
 }
 
 // main clock parts

@@ -77,6 +77,22 @@ module disc_with_slots(r=104, h=2.25, slots=12, slot_width=100, slot_r=5, offset
     }
 }
 
+module chamfer(apply = false, outline_z = 2.45, outline_r=0.6) {
+    children();
+    if (apply) {
+        // subtract some of the hours text from the first layer
+        // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
+        outline_z = disc_thickness + 0.2;
+        // outline distance away from main text
+        outline_r = 0.8;
+        for (theta = [0 : 30 : 359]) {
+            translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
+                children();
+            }
+        }
+    }
+}
+
 module rotate_360(count = 12) {
 	for (i = [0 : count - 1]) {
 		angle = (i + 1) * 360 / count;
