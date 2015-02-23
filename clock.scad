@@ -1,10 +1,10 @@
 include <gears.scad>
 include <utils.scad>
 
-disable_cover_plate = true;
-disable_hours_disc = false;
-disable_minutes_disc = false;
-disable_base = false;
+disable_cover_plate		= false;
+disable_hours_disc		= false;
+disable_minutes_disc	= false;
+disable_base			= false;
 
 enable_text_chamfer = false; // only for 3d-printing
 
@@ -15,7 +15,7 @@ clearance = 0.5;
 axis_r = 2.5;
 disc_thickness = 2.25;
 wall_thickness = 2;
-font_size = clock_r * .11; // scale font based on radius
+font_size = clock_r * .105; // scale font based on radius
 
 module hours_disc() {
 	r = clock_r - (wall_thickness + clearance);
@@ -54,7 +54,7 @@ module hours_disc() {
 				translate([0, 0, -bump_h]) cylinder(bump_h, 26, 26, $fn = 200);
 			}
             // hours text
-			color("blue") clock_words(from_edge=6, font_size=font_size, words=HOURS);
+			color("blue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
 			if (enable_text_chamfer) {
 			   // subtract some of the hours text from the first layer
 			   // text is offset by -0.5 and first layer is 0.3mm -> want to offset by:
@@ -63,7 +63,7 @@ module hours_disc() {
 			   outline_r = 0.8;
 			   for (theta = [0 : 30 : 359]) {
 				   translate([outline_r * cos(theta), outline_r * sin(theta), outline_z]) {
-					   color("dodgerblue") clock_words(from_edge=8, font_size=font_size, words=HOURS);
+					   color("dodgerblue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
 				   }
 			   }
 		   }
@@ -94,14 +94,14 @@ module minutes_disc() {
         difference() {
 			color("pink") union() {
 				// minutes disc (make it smaller)
-				disc_with_slots(r = r, slot_width=r, slot_r=font_size*.6, offset=[r*.5,-12,-0.5]);
-
+				disc_with_slots(r = r - 2, slot_width=r, slot_r=font_size*.6, offset=[r*.5,-12,-0.5]);
+				ring(r1=r, r2=r - 2, h = disc_thickness);
 				rotate_360(12) {
 					rotate(13) translate([0, r -20, 0]) mirror([0,0,1]) straight_nub();
 				}
 
 				// home bump
-				rotate(16) translate([0, r -20, 0]) mirror([0,0,1]) straight_nub();
+				rotate(18) translate([0, r -20, 0]) mirror([0,0,1]) straight_nub();
 
 				// center cylinder and gear
 				translate([0,0,-4]) gear(number_of_teeth=52,
@@ -160,29 +160,43 @@ module cool_cover_disc(r = clock_r, h=17) {
 
 module base_disc(r = clock_r, height = 16, disc_support_r = 29, disc_support_h = 19) {
 	axis_h = 29;
-    // disc support with motor holes
 	difference() {
 		union() {
-			cylinder(disc_support_h-1, axis_r*6, axis_r, $fn = 60); // core spindle cone to strengthen for motor cut-out
-			cylinder(axis_h, axis_r, axis_r, $fn = 60); // core spindle
-			ring(r1=disc_support_r, r2=disc_support_r-(wall_thickness*2), h = disc_support_h);
+			// disc support with motor holes
+			difference() {
+				union() {
+					cylinder(disc_support_h-1, axis_r*6, axis_r, $fn = 60); // core spindle cone to strengthen for motor cut-out
+					cylinder(axis_h, axis_r, axis_r, $fn = 60); // core spindle
+					ring(r1=disc_support_r, r2=disc_support_r-(wall_thickness*2), h = disc_support_h);
+				}
+				motor_r_cutout = motor_r + clearance;
+				translate([-12.5,0, 0]) cylinder(motor_h + 0.5, motor_r_cutout, motor_r_cutout); // cut-out for motor 1 on spindle
+				translate([-22,0, 0]) cylinder(motor_h * 2, motor_r_cutout, motor_r_cutout); // motor 1 move over so it can fit
+				translate([34, 0, 0]) cylinder(motor_h * 2, motor_r_cutout, motor_r_cutout); // motor 2
+			}
+			
+			// overhang support (to be removed after print)
+			color("darkred") translate([-2.5,0,0]) cylinder(motor_h+0.5, 1.25, 1.25);
+
+			// switch platform
+			rotate(-12) translate([clock_r - (wall_thickness + 10),0,0]) cube([10,10,12]);
+
+			// main bottom
+			snapfit = r - (wall_thickness/2) - 0.18; // snap tolerance
+			difference() {
+				cylinder(height - disc_thickness, r, r, $fn = 200);
+				translate([0,0,disc_thickness]) cylinder(height - disc_thickness, r - wall_thickness * 1.5, r - wall_thickness*1.5, $fn = 200);
+				translate([0,0,height-disc_thickness-4]) ring(r1=snapfit + 10, r2=snapfit, h=4.5); // notch for snap fit
+			}
 		}
-		motor_r_cutout = motor_r + clearance;
-		translate([-12.5,0, 0]) cylinder(motor_h + 0.5, motor_r_cutout, motor_r_cutout); // cut-out for motor 1 on spindle
-		translate([-22,0, 0]) cylinder(motor_h * 2, motor_r_cutout, motor_r_cutout); // motor 1 move over so it can fit
-		translate([34, 0, 0]) cylinder(motor_h * 2, motor_r_cutout, motor_r_cutout); // motor 2
+		// clear out a bunch of material from bottom
+		translate([0,0,-0.5]) ring(r1=r - 12, r2=r - r/2, h = disc_thickness + 1);
 	}
-
-    // switch platform
-    translate([clock_r - (wall_thickness + 10),0,0]) cube([10,10,12]);
-
-    // main bottom
-	snapfit = r - (wall_thickness/2) - 0.12; // snap tolerance
-    difference() {
-        cylinder(height - disc_thickness, r, r, $fn = 200);
-        translate([0,0,disc_thickness]) cylinder(height - disc_thickness, r - wall_thickness, r - wall_thickness, $fn = 200);
-		translate([0,0,height-disc_thickness-4]) ring(r1=snapfit + 10, r2=snapfit, h=4.5); // notch for snap fit
-    }
+				
+	// but leave a support structure on the bottom
+	rotate_360(12){
+		translate([disc_support_r-wall_thickness,-disc_thickness*2, 0]) cube([r - disc_support_r, disc_thickness*4, disc_thickness]);
+	}
 }
 
 // main clock parts
@@ -195,8 +209,12 @@ if (!disable_hours_disc || !disable_minutes_disc) {
 		union() {
 			display_hour = 11;
 			display_min  = 25;
-			rotate((360 / 12) * (display_hour - 2)) hours_disc();
-			rotate((360 / 60) * (display_min - 10)) translate([0, 0, -(disc_thickness + clearance)]) minutes_disc();
+			if (!disable_hours_disc) {
+				rotate((360 / 12) * (display_hour - 2)) hours_disc();
+			}
+			if (!disable_minutes_disc) {
+				rotate((360 / 60) * (display_min - 10)) translate([0, 0, -(disc_thickness + clearance)]) minutes_disc();
+			}
 		}
         union() {
 			axis_cutout_r = axis_r + (clearance/2);
@@ -206,5 +224,5 @@ if (!disable_hours_disc || !disable_minutes_disc) {
 }
 
 if (!disable_base) {
-    *translate([0,0,-25.75]) base_disc();
+    translate([0,0,-25.75]) base_disc();
 }
