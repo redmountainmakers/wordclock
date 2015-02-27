@@ -2,9 +2,9 @@ include <gears.scad>
 include <utils.scad>
 
 disable_cover_plate		= true;
-disable_hours_disc		= true;
+disable_hours_disc		= false;
 disable_minutes_disc	= true;
-disable_base			= false;
+disable_base			= true;
 
 enable_text_chamfer = false; // only for 3d-printing
 
@@ -143,7 +143,7 @@ module base_disc(r = clock_r, height = 16, disc_support_r = mid_axis_r, disc_sup
 			// disc support with motor holes
             cylinder(disc_support_h-1, axis_r*6, axis_r, $fn = 60); // core spindle cone to strengthen for motor cut-out
             cylinder(axis_h, axis_r, axis_r, $fn = 60); // core spindle
-            ring(r1=disc_support_r, r2=disc_support_r-(wall_thickness*2), h = disc_support_h);
+            ring(r1=disc_support_r+wall_thickness, r2=disc_support_r-wall_thickness, h = disc_support_h);
 
 			// switch platform
 			rotate(-12) translate([clock_r - (wall_thickness + 10),0,0]) cube([10,10,12]);
@@ -167,15 +167,17 @@ module base_disc(r = clock_r, height = 16, disc_support_r = mid_axis_r, disc_sup
         // clear out spots for motors
         motor_r_cutout = motor_r + clearance;
         color("whitesmoke") translate([-12.5,0, 0.6]) cylinder(motor_h + clearance, motor_r_cutout, motor_r_cutout); // cut-out for motor 1 on spindle
-        translate([-22,0, 0.6]) cylinder(motor_h + 1, motor_r_cutout, motor_r_cutout); // motor 1 move over so it can fit
-        translate([34, 0, 0.6]) cylinder(motor_h + 1, motor_r_cutout, motor_r_cutout); // motor 2
+        translate([-22,0, 0.6]) cylinder(motor_h + 10, motor_r_cutout, motor_r_cutout); // motor 1 move over so it can fit
+        translate([34, 0, 0.6]) cylinder(motor_h + 10, motor_r_cutout, motor_r_cutout); // motor 2
     }    
-			
+
     // overhang support (to be removed after print)
     color("darkred") translate([-2.5,0,0.5]) cylinder(motor_h+.75, 1.25, 1.25);
 }
 
 // main clock parts
+
+// temporary intersection to reduce print size for prototyping
 intersection() {
 
 union() {
@@ -203,7 +205,7 @@ if (!disable_hours_disc || !disable_minutes_disc) {
 }
 
 if (!disable_base) {
-    translate([0,0,-25.75]) base_disc();
+    %translate([0,0,-25.75]) base_disc();
 }
 }
 
