@@ -2,9 +2,9 @@ include <gears.scad>
 include <utils.scad>
 
 disable_cover_plate		= true;
-disable_hours_disc		= false;
+disable_hours_disc		= true;
 disable_minutes_disc	= true;
-disable_base			= true;
+disable_base			= false;
 
 enable_text_chamfer = false; // only for 3d-printing
 
@@ -117,7 +117,7 @@ module minutes_disc() {
     }
 }
 
-module cool_cover_disc(r = clock_r, h=17) {
+module cool_cover_disc(r = clock_r, h=13.8) {
 	rect_w = r*.6;
 	rect_h = r*.28;
     difference() {	
@@ -136,7 +136,7 @@ module cool_cover_disc(r = clock_r, h=17) {
     }
 }
 
-module base_disc(r = clock_r, height = 16, disc_support_r = mid_axis_r, disc_support_h = 19) {
+module cd_rom_motor_base_disc(r = clock_r, height = 16, disc_support_r = mid_axis_r, disc_support_h = 19) {
 	axis_h = 29;
 	difference() {
 		union() {
@@ -175,6 +175,41 @@ module base_disc(r = clock_r, height = 16, disc_support_r = mid_axis_r, disc_sup
     color("darkred") translate([-2.5,0,0.5]) cylinder(motor_h+.75, 1.25, 1.25);
 }
 
+module base_disc(r = clock_r, height = 9, disc_support_r = mid_axis_r, disc_support_h = 9) {
+	axis_h = 18.5;
+	difference() {
+		union() {
+			// disc support with motor holes
+            //cylinder(disc_support_h-1, axis_r*6, axis_r, $fn = 60); // core spindle cone to strengthen for motor cut-out
+            cylinder(axis_h, axis_r, axis_r, $fn = 60); // core spindle
+            
+            intersection() {
+                ring(r1=disc_support_r+wall_thickness, r2=disc_support_r-wall_thickness, h = disc_support_h);
+                rotate_360(12) {
+                    translate([18,-3,0]) cube([20,6,disc_support_h]);
+                }
+            }
+			// switch platform
+			//rotate(-12) translate([clock_r - (wall_thickness + 10),0,0]) cube([10,10,4]);
+
+			// main bottom
+			snapfit = r - (wall_thickness/2) - 0.18; // snap tolerance
+			difference() {
+				cylinder(height - disc_thickness, r, r, $fn = 200);
+				translate([0,0,disc_thickness]) cylinder(height - disc_thickness, r - wall_thickness * 1.5, r - wall_thickness*1.5, $fn = 200);
+				translate([0,0,height-disc_thickness-4]) ring(r1=snapfit + 10, r2=snapfit, h=4.5); // notch for snap fit
+                
+                // clear out a bunch of material from bottom
+                translate([0,0,-0.5]) ring(r1=r - 12, r2=r - r/1.65, h = disc_thickness + 1);
+			}
+            
+            // but leave a support structure on the bottom
+            rotate_360(12){
+                translate([disc_support_r-wall_thickness,-disc_thickness*2, 0]) cube([r - disc_support_r, disc_thickness*4, disc_thickness]);
+            }
+		}
+    }
+}
 // main clock parts
 
 // temporary intersection to reduce print size for prototyping
@@ -205,9 +240,8 @@ if (!disable_hours_disc || !disable_minutes_disc) {
 }
 
 if (!disable_base) {
-    %translate([0,0,-25.75]) base_disc();
+    translate([0,0,-17.75]) base_disc();
 }
 }
 
-	translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);
-}
+	translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);}
