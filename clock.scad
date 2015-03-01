@@ -3,8 +3,8 @@ include <utils.scad>
 
 disable_cover_plate		= true;
 disable_hours_disc		= true;
-disable_minutes_disc	= true;
-disable_base			= false;
+disable_minutes_disc	= false;
+disable_base			= true;
 
 enable_text_chamfer = false; // only for 3d-printing
 
@@ -36,34 +36,41 @@ module hours_disc() {
 		"ELEVEN"
 	];
     difference() {
-        difference() {
-			color("lightblue") union() {
-				// hours disc
-				disc_with_slots(r=r, slot_width=r*.5, offset=[r*.5,1,-0.5]);
+        color("lightblue") union() {
+            // hours disc
+            disc_with_slots(r=r, slot_width=r*.5, offset=[r*.5,1,-0.5]);
 
-				// small spacer ring
-				translate([0,0,-.5]) ring(r1 = 34, r2 = 34 - 1.5, h = clearance);
-									
-				rotate_360(12) {
-					mirror([0,0,1]) circular_nub(r,h=bump_h);
-				}
-
-				// home bump
-				rotate(21) mirror([0,0,1]) circular_nub(r,h=bump_h);
-
-				// axis that minutes rotates around
-				mid_r = mid_axis_r - clearance/2;
-				translate([0, 0, -bump_h]) cylinder(bump_h, mid_r, mid_r, $fn = 200);
-			}
-            
-            // hours text
-            chamfer(apply = enable_text_chamfer, outline_z=disc_thickness + 0.2) {
-               color("dodgerblue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
+            // small spacer ring
+            translate([0,0,-.5]) ring(r1 = 34, r2 = 34 - 1.5, h = clearance);
+                                
+            rotate_360(12) {
+                mirror([0,0,1]) circular_nub(r,h=bump_h);
             }
+
+            // home bump
+            rotate(21) mirror([0,0,1]) circular_nub(r,h=bump_h);
+
+            // axis that minutes rotates around
+            mid_r = mid_axis_r - clearance/2;
+            translate([0, 0, -bump_h]) cylinder(bump_h, mid_r, mid_r, $fn = 200);
+        }
+        
+        // hours text
+        chamfer(apply = enable_text_chamfer, outline_z=disc_thickness + 0.2) {
+           color("dodgerblue") clock_words(from_edge=7.5, font_size=font_size, words=HOURS);
         }
 		translate([0,0,-(bump_h + .5)]) gear(number_of_teeth=38, circular_pitch=220,
 			hub_diameter=0, rim_width=0,
 			hub_thickness=bump_h + 1,rim_thickness=bump_h + 1,gear_thickness=bump_h + 1);
+            
+        rotate_360(12) {
+            translate([r*.85,-21,-0.5]) cylinder(disc_thickness + 1, 6.2, 6.2);       
+            rotate(-2.5) translate([r*.32,14,-1]) cylinder(disc_thickness + 2, 5, 5);
+        }
+        
+        rotate_360(8){
+            translate([r*.1,14,-1]) cylinder(disc_thickness + 2, 3.5, 3.5);
+        }
     }
 }
 
@@ -186,7 +193,7 @@ module base_disc(r = clock_r, height = 9, disc_support_r = mid_axis_r, disc_supp
             intersection() {
                 ring(r1=disc_support_r+wall_thickness, r2=disc_support_r-wall_thickness, h = disc_support_h);
                 rotate_360(12) {
-                    translate([18,-3,0]) cube([20,6,disc_support_h]);
+                    translate([disc_support_r,0,0]) cylinder(disc_support_h,4.2,2.3);
                 }
             }
 			// switch platform
@@ -200,12 +207,29 @@ module base_disc(r = clock_r, height = 9, disc_support_r = mid_axis_r, disc_supp
 				translate([0,0,height-disc_thickness-4]) ring(r1=snapfit + 10, r2=snapfit, h=4.5); // notch for snap fit
                 
                 // clear out a bunch of material from bottom
-                translate([0,0,-0.5]) ring(r1=r - 12, r2=r - r/1.65, h = disc_thickness + 1);
+                translate([0,0,-0.5]) ring(r1=r*.3, r2=r*.1, h = disc_thickness + 1);
+                translate([0,0,-0.5]) ring(r1=r*.6, r2=r*.4, h = disc_thickness + 1);
+                translate([0,0,-0.5]) ring(r1=r*.9, r2=r*.7, h = disc_thickness + 1);
+                
+                                
 			}
             
+            
             // but leave a support structure on the bottom
-            rotate_360(12){
-                translate([disc_support_r-wall_thickness,-disc_thickness*2, 0]) cube([r - disc_support_r, disc_thickness*4, disc_thickness]);
+            difference() {
+                rotate_360(12){
+                    translate([0,-disc_thickness*2, 0]) cube([r, disc_thickness*4, disc_thickness]);
+                }
+                union() {
+                    rotate_360(12) {
+                        translate([r*.5,0,-0.5]) cylinder(disc_thickness+1, 2, 2, $fn=40);
+                        translate([r*.8,0,-0.5]) cylinder(disc_thickness+1, 2, 2, $fn=40);
+                    }
+                    
+                    rotate_360(3) {
+                        translate([8,0,-0.5]) cylinder(disc_thickness+1, 5, 5, $fn=40);
+                    }
+                }
             }
 		}
     }
@@ -213,7 +237,7 @@ module base_disc(r = clock_r, height = 9, disc_support_r = mid_axis_r, disc_supp
 // main clock parts
 
 // temporary intersection to reduce print size for prototyping
-intersection() {
+//intersection() {
 
 union() {
 if (!disable_cover_plate) {
@@ -244,4 +268,4 @@ if (!disable_base) {
 }
 }
 
-	translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);}
+	//translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);}
