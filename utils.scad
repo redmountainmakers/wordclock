@@ -112,7 +112,7 @@ module straight_nub(w = 2, h = 4, l = 10) {
 module circular_nub(r = 100, w = 2, h = 6.75) {
 	intersection() {
 		ring(r,r-w,h);
-		rotate([0,40,0]) translate([-h, r - (h*2), -h-4.5]) cube([40, w*8, w*8]);
+		translate([r-1,0,0]) cylinder(h, 8, 2, $fn=20);
 	}
 }
 
