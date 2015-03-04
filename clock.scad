@@ -250,7 +250,7 @@ module base_disc(r = clock_r) {
 				translate([0,0,wall_h-snapfit_h]) ring(r1=snapfit + 10, r2=snapfit, h=snapfit_h+0.1); 
                 
                 // clear out a bunch of material from bottom
-                translate([0,0,-0.5]) ring(r1=r*.3, r2=r*.1, h = disc_h + 1);
+                translate([0,0,-0.5]) ring(r1=r*.3, r2=0, h = disc_h + 1);
                 translate([0,0,-0.5]) ring(r1=r*.6, r2=r*.4, h = disc_h + 1);
                 translate([0,0,-0.5]) ring(r1=r*.9, r2=r*.7, h = disc_h + 1);
 			}
@@ -268,7 +268,7 @@ module base_disc(r = clock_r) {
                     }
                     
                     rotate_360(3) {
-                        translate([8,0,-0.5]) cylinder(disc_h+1, 5, 5, $fn=40);
+                        translate([8,0,-0.5]) cylinder(disc_h+1, 5.5, 5.5, $fn=40);
                     }
                 }
             }
