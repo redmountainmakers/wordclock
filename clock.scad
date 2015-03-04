@@ -278,9 +278,9 @@ module base_disc(r = clock_r) {
 // main clock parts
 
 // temporary intersection to reduce print size for prototyping
-intersection() {
+//intersection() {
 
-union() {
+//union() {
 
 mins_z = disc_support_h + gear_h;
 hours_z = mins_z + disc_h + clearance;
@@ -305,6 +305,6 @@ if (!disable_base) {
 	base_disc();
 }
 
-}
+//}
 
-	translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);}
+	//translate([0,0,-200]) cylinder(400, 45, 45, $fn=100);}
