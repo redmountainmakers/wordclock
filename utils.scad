@@ -1,7 +1,7 @@
 
 module clock_words(
     from_edge=4,
-    letter_depth=3.25, //disc_thickness+1,
+    letter_depth=2.25, //disc_thickness+1,
     center_offset=0,
     font_size=11.5,
     words
@@ -9,7 +9,7 @@ module clock_words(
     for (i = [0 : len(words) - 1]) {
         angle = (i + 1) * 360 / len(words);
         rotate(90 - angle) {
-            translate([-clock_r + from_edge, center_offset,-0.5]) {
+            translate([-clock_r + from_edge, center_offset,-.03]) {
                 linear_extrude(height=letter_depth) {
                     text(words[i], size=font_size, font="Gunplay");
                 }
