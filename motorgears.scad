@@ -28,15 +28,26 @@ module worm_motor_gear(notch_r = 2.6, axis_h = 2.5) {
     }
 }
 
-translate([25,0]) worm_motor_gear();
-translate([25,25]) worm_motor_gear(2.7);
-translate([25,50]) worm_motor_gear(2.8);
-translate([25,75]) worm_motor_gear(2.9);
+module magnet_hole(magnet_r = 1.5) {
+	difference() {
+		cube([10, 10, 2.25]);
+		translate([5, 5, 2.25 - 1.5]) cylinder(1.55, magnet_r, magnet_r, $fn=30);
+	}
+}
 
-// translate([75,0]) motor_gear(7.1);
-// translate([75,25]) motor_gear(7.2);
-// translate([75,50]) motor_gear(7);
+translate([50,0]) worm_motor_gear();
+translate([50,35]) worm_motor_gear(2.7);
+translate([50,70]) worm_motor_gear(2.8);
+translate([50,105]) worm_motor_gear(2.9);
 
-// translate([25,0]) motor_gear(5.8, 9);
-// translate([25,25]) motor_gear(5.9, 9);
-// translate([25,50]) motor_gear(6, 9);
+translate([-50,0]) magnet_hole(1.45);
+translate([-50,10]) magnet_hole(1.475);
+translate([-50,20]) magnet_hole(1.5);
+translate([-50,30]) magnet_hole(1.525);
+translate([-50,40]) magnet_hole(1.55);
+
+
+rotate_extrude(convexity = 10, $fn = 100)
+translate([90, 0, 0])
+circle(r = 0.5, $fn = 100);
+

@@ -9,8 +9,8 @@ module clock_words(
     for (i = [0 : len(words) - 1]) {
         angle = (i + 1) * 360 / len(words);
         rotate(90 - angle) {
-            translate([-clock_r + from_edge, center_offset,-.03]) {
-                linear_extrude(height=letter_depth) {
+            translate([-clock_r + from_edge, center_offset,-0.1]) {
+                linear_extrude(height=letter_depth+0.2) {
                     text(words[i], size=font_size, font="Gunplay");
                 }
             }
@@ -34,8 +34,8 @@ module rounded_rect(w=51, l=21, h=2.25, r=6) {
 
 module ring(r1=104, r2=101, h=2.25) {
     difference() {
-        cylinder(h, r1, r1, $fn = 200);
-        translate([0,0,-0.5]) cylinder(h + 1, r2, r2, $fn = 200);
+        cylinder(h, r1, r1, $fn = 400);
+        translate([0,0,-0.5]) cylinder(h + 1, r2, r2, $fn = 400);
     }
 }
 
