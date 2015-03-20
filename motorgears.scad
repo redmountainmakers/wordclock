@@ -47,7 +47,4 @@ translate([-50,30]) magnet_hole(1.525);
 translate([-50,40]) magnet_hole(1.55);
 
 
-rotate_extrude(convexity = 10, $fn = 100)
-translate([90, 0, 0])
-circle(r = 0.5, $fn = 100);
 
